@@ -1,6 +1,5 @@
 package com.ariel.restfulwebservices.service;
 
-import com.ariel.restfulwebservices.exception.UserNotFoundException;
 import com.ariel.restfulwebservices.model.User;
 import com.ariel.restfulwebservices.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,8 +22,7 @@ public class UserService {
     }
 
     public User getUserById(long id) {
-//        return repository.getById(id);
-        throw new UserNotFoundException(id);
+        return repository.getById(id);
     }
 
     public void deleteUserById(long id) {

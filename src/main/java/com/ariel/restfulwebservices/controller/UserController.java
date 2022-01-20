@@ -3,6 +3,8 @@ package com.ariel.restfulwebservices.controller;
 import com.ariel.restfulwebservices.model.User;
 import com.ariel.restfulwebservices.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -10,6 +12,9 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import javax.validation.Valid;
 import java.net.URI;
 import java.util.List;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 public class UserController {
@@ -22,8 +27,12 @@ public class UserController {
     }
 
     @GetMapping("/users/{id}")
-    public User getUserById(@PathVariable long id) {
-        return service.getUserById(id);
+    public EntityModel<User> getUserById(@PathVariable long id) {
+        User user = service.getUserById(id);
+        EntityModel<User> model = EntityModel.of(user);
+        WebMvcLinkBuilder linkToUser = linkTo(methodOn(this.getClass()).getAllUsers());
+        model.add(linkToUser.withRel("all-users"));
+        return model;
     }
 
     @PostMapping("/users")

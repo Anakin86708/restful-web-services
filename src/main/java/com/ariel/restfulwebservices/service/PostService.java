@@ -26,7 +26,7 @@ public class PostService {
         return repository.findById(id);
     }
 
-    public void deletePostById(long id) {
-        repository.deleteById(id);
+    public void deletePost(Post post) {
+        repository.delete(post);
     }
 }

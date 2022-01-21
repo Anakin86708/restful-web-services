@@ -82,6 +82,16 @@ public class UserController {
         return ResponseEntity.created(uri).build();
     }
 
+    @DeleteMapping("/users/{userId}/posts/{postId}")
+    public void deletePostFromUser(@PathVariable long userId, @PathVariable long postId) {
+        Post post = getValidPost(postId);
+
+        if (!getAllPostsFromUser(userId).contains(post))
+            throw new PostNotFoundException(postId);
+
+        postService.deletePost(post);
+    }
+
     private User getValidUser(long id) throws UserNotFoundException {
         Optional<User> user = userService.getUserById(id);
 

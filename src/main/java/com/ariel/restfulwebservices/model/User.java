@@ -1,17 +1,14 @@
 package com.ariel.restfulwebservices.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Past;
 import javax.validation.constraints.Size;
 import java.util.Date;
+import java.util.List;
 
 
 @JsonIgnoreProperties({"hibernateLazyInitializer"})
@@ -32,8 +29,8 @@ public class User {
     @Past
     private Date birthDate;
 
-    @JsonIgnore
-    private final String password = "fakePassword";
+    @OneToMany(mappedBy = "user")
+    private List<Post> posts;
 
     protected User() {
 
@@ -56,7 +53,7 @@ public class User {
         return birthDate;
     }
 
-    public String getPassword() {
-        return password;
+    public List<Post> getPosts() {
+        return posts;
     }
 }

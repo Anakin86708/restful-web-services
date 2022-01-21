@@ -1,15 +1,13 @@
 package com.ariel.restfulwebservices.controller;
 
+import com.ariel.restfulwebservices.model.Post;
 import com.ariel.restfulwebservices.model.User;
+import com.ariel.restfulwebservices.service.PostService;
 import com.ariel.restfulwebservices.service.UserService;
-import com.fasterxml.jackson.databind.ser.FilterProvider;
-import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
-import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -23,26 +21,19 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RestController
 public class UserController {
     @Autowired
-    private UserService service;
+    private UserService userService;
+
+    @Autowired
+    private PostService postService;
 
     @GetMapping("/users")
     public List<User> getAllUsers() {
-        return service.getAllUsers();
-    }
-
-    @GetMapping("/filter-users")
-    public MappingJacksonValue getFilteredUsers() {
-        List<User> allUsers = service.getAllUsers();
-        MappingJacksonValue mapping = new MappingJacksonValue(allUsers);
-        SimpleBeanPropertyFilter filter = SimpleBeanPropertyFilter.filterOutAllExcept("name", "birthDate");
-        FilterProvider filters = new SimpleFilterProvider().addFilter("AllUsersFilter", filter);
-        mapping.setFilters(filters);
-        return mapping;
+        return userService.getAllUsers();
     }
 
     @GetMapping("/users/{id}")
     public EntityModel<User> getUserById(@PathVariable long id) {
-        User user = service.getUserById(id);
+        User user = userService.getUserById(id);
         EntityModel<User> model = EntityModel.of(user);
         WebMvcLinkBuilder linkToUser = linkTo(methodOn(this.getClass()).getAllUsers());
         model.add(linkToUser.withRel("all-users"));
@@ -51,13 +42,30 @@ public class UserController {
 
     @PostMapping("/users")
     public ResponseEntity<User> addUser(@Valid @RequestBody User user) {
-        service.createUser(user);
+        userService.createUser(user);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(user.getId()).toUri();
         return ResponseEntity.created(uri).build();
     }
 
     @DeleteMapping("/users/{id}")
     public void deleteUserById(@PathVariable long id) {
-        service.deleteUserById(id);
+        userService.deleteUserById(id);
+    }
+
+    ///////////
+    // Posts //
+    ///////////
+
+    @GetMapping("/users/{userId}/posts")
+    public List<Post> getAllPostsFromUser(@PathVariable long userId) {
+        return postService.getAllPostsFromUser(userId);
+    }
+
+    @PostMapping("/users/{userId}/posts")
+    public ResponseEntity<Post> addPostToUser(@PathVariable long userId, @RequestBody Post post) {
+        post.setUser(getUserById(userId).getContent());
+        postService.createPostForUser(post);
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(post.getId()).toUri();
+        return ResponseEntity.created(uri).build();
     }
 }

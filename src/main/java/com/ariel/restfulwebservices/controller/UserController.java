@@ -1,5 +1,6 @@
 package com.ariel.restfulwebservices.controller;
 
+import com.ariel.restfulwebservices.exception.PostNotFoundException;
 import com.ariel.restfulwebservices.exception.UserNotFoundException;
 import com.ariel.restfulwebservices.model.Post;
 import com.ariel.restfulwebservices.model.User;
@@ -35,7 +36,7 @@ public class UserController {
 
     @GetMapping("/users/{id}")
     public EntityModel<User> getUserModelById(@PathVariable long id) {
-        User user = getValidUserById(id);
+        User user = getValidUser(id);
         EntityModel<User> model = EntityModel.of(user);
         WebMvcLinkBuilder linkToUser = linkTo(methodOn(this.getClass()).getAllUsers());
         model.add(linkToUser.withRel("all-users"));
@@ -60,22 +61,40 @@ public class UserController {
     ///////////
     @GetMapping("/users/{userId}/posts")
     public List<Post> getAllPostsFromUser(@PathVariable long userId) {
-        return postService.getAllPostsFromUser(getValidUserById(userId));
+        return postService.getAllPostsFromUser(getValidUser(userId));
+    }
+
+    @GetMapping("/users/{userId}/posts/{postId}")
+    public EntityModel<Post> getPostModelById(@PathVariable long userId, @PathVariable long postId) {
+        getValidUser(userId);
+        Post post = getValidPost(postId);
+        EntityModel<Post> model = EntityModel.of(post);
+        WebMvcLinkBuilder linkToPosts = linkTo(methodOn(this.getClass()).getAllPostsFromUser(userId));
+        model.add(linkToPosts.withRel("all-posts"));
+        return model;
     }
 
     @PostMapping("/users/{userId}/posts")
     public ResponseEntity<Post> addPostToUser(@PathVariable long userId, @RequestBody Post post) {
-        post.setUser(getValidUserById(userId));
+        post.setUser(getValidUser(userId));
         postService.createPostForUser(post);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(post.getId()).toUri();
         return ResponseEntity.created(uri).build();
     }
 
-    private User getValidUserById(long id) throws UserNotFoundException {
+    private User getValidUser(long id) throws UserNotFoundException {
         Optional<User> user = userService.getUserById(id);
 
         if (user.isEmpty())
             throw new UserNotFoundException(id);
         return user.get();
+    }
+
+    private Post getValidPost(long postId) {
+        Optional<Post> postOpt = postService.getPostById(postId);
+
+        if (postOpt.isEmpty())
+            throw new PostNotFoundException(postId);
+        return postOpt.get();
     }
 }

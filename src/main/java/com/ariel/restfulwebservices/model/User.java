@@ -35,11 +35,6 @@ public class User {
 
     }
 
-    public User(String name, Date birthDate) {
-        this.name = name;
-        this.birthDate = birthDate;
-    }
-
     public long getId() {
         return id;
     }

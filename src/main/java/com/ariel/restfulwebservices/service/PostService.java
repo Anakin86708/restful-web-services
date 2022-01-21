@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PostService {
@@ -21,8 +22,8 @@ public class PostService {
         repository.save(post);
     }
 
-    public Post getPostById(long id) {
-        return repository.getById(id);
+    public Optional<Post> getPostById(long id) {
+        return repository.findById(id);
     }
 
     public void deletePostById(long id) {

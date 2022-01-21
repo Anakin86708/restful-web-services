@@ -2,10 +2,14 @@ package com.ariel.restfulwebservices.controller;
 
 import com.ariel.restfulwebservices.model.User;
 import com.ariel.restfulwebservices.service.UserService;
+import com.fasterxml.jackson.databind.ser.FilterProvider;
+import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -24,6 +28,16 @@ public class UserController {
     @GetMapping("/users")
     public List<User> getAllUsers() {
         return service.getAllUsers();
+    }
+
+    @GetMapping("/filter-users")
+    public MappingJacksonValue getFilteredUsers() {
+        List<User> allUsers = service.getAllUsers();
+        MappingJacksonValue mapping = new MappingJacksonValue(allUsers);
+        SimpleBeanPropertyFilter filter = SimpleBeanPropertyFilter.filterOutAllExcept("name", "birthDate");
+        FilterProvider filters = new SimpleFilterProvider().addFilter("AllUsersFilter", filter);
+        mapping.setFilters(filters);
+        return mapping;
     }
 
     @GetMapping("/users/{id}")

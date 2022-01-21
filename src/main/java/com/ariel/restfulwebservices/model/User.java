@@ -2,18 +2,17 @@ package com.ariel.restfulwebservices.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Past;
 import javax.validation.constraints.Size;
 import java.util.Date;
+import java.util.List;
 
 
 @JsonIgnoreProperties({"hibernateLazyInitializer"})
+//@JsonFilter("AllUsersFilter")
 @Entity
 public class User {
     @Id
@@ -29,6 +28,9 @@ public class User {
     @NotEmpty
     @Past
     private Date birthDate;
+
+    @OneToMany(mappedBy = "user")
+    private List<Post> posts;
 
     protected User() {
 
@@ -49,5 +51,9 @@ public class User {
 
     public Date getBirthDate() {
         return birthDate;
+    }
+
+    public List<Post> getPosts() {
+        return posts;
     }
 }

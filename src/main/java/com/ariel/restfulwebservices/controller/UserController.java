@@ -34,17 +34,12 @@ public class UserController {
     }
 
     @GetMapping("/users/{id}")
-    public EntityModel<User> getUserById(@PathVariable long id) {
-        Optional<User> user = userService.getUserById(id);
-
-        if (user.isEmpty()) {
-            throw new UserNotFoundException(id);
-        } else {
-            EntityModel<User> model = EntityModel.of(user.get());
-            WebMvcLinkBuilder linkToUser = linkTo(methodOn(this.getClass()).getAllUsers());
-            model.add(linkToUser.withRel("all-users"));
-            return model;
-        }
+    public EntityModel<User> getUserModelById(@PathVariable long id) {
+        User user = getValidUserById(id);
+        EntityModel<User> model = EntityModel.of(user);
+        WebMvcLinkBuilder linkToUser = linkTo(methodOn(this.getClass()).getAllUsers());
+        model.add(linkToUser.withRel("all-users"));
+        return model;
     }
 
     @PostMapping("/users")
@@ -58,20 +53,29 @@ public class UserController {
     public void deleteUserById(@PathVariable long id) {
         userService.deleteUserById(id);
     }
+
+
     ///////////
     // Posts //
     ///////////
-
     @GetMapping("/users/{userId}/posts")
     public List<Post> getAllPostsFromUser(@PathVariable long userId) {
-        return postService.getAllPostsFromUser(userId);
+        return postService.getAllPostsFromUser(getValidUserById(userId));
     }
 
     @PostMapping("/users/{userId}/posts")
     public ResponseEntity<Post> addPostToUser(@PathVariable long userId, @RequestBody Post post) {
-        post.setUser(getUserById(userId).getContent());
+        post.setUser(getValidUserById(userId));
         postService.createPostForUser(post);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(post.getId()).toUri();
         return ResponseEntity.created(uri).build();
+    }
+
+    private User getValidUserById(long id) throws UserNotFoundException {
+        Optional<User> user = userService.getUserById(id);
+
+        if (user.isEmpty())
+            throw new UserNotFoundException(id);
+        return user.get();
     }
 }

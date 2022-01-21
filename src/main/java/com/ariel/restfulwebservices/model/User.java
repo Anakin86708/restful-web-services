@@ -1,5 +1,6 @@
 package com.ariel.restfulwebservices.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.Column;
@@ -30,6 +31,9 @@ public class User {
     @Past
     private Date birthDate;
 
+    @JsonIgnore
+    private final String password = "fakePassword";
+
     protected User() {
 
     }
@@ -49,5 +53,9 @@ public class User {
 
     public Date getBirthDate() {
         return birthDate;
+    }
+
+    public String getPassword() {
+        return password;
     }
 }
